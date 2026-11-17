@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>GeoSemantic Mapper — Technischer Überblick in neun Teilen</title>
+<style>
+:root{--bg:#0b1020;--surface:#151d31;--surface2:#1c2840;--border:#2b3a54;--text:#f2f5fb;--muted:#a7b6ce;--accent:#71ddc5;--accent2:#8ca9ff;--orange:#ffc98a;--red:#ff9d9d;--shadow:0 20px 80px #02081288}
+*{box-sizing:border-box} html,body{height:100%;margin:0}body{background:#070c17;color:var(--text);font-family:Inter,"Segoe UI",Arial,system-ui,sans-serif;overflow:hidden}
+#deck{height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.slide{width:min(1280px,100%);height:min(720px,calc(100vh - 40px));background:radial-gradient(ellipse at 90% 10%,#172e47 0,transparent 35%),var(--bg);border:1px solid #2b3a54;border-radius:18px;padding:54px 68px 64px;display:none;position:relative;overflow:hidden;box-shadow:var(--shadow)}.slide.active{display:flex;flex-direction:column}.slide:before{content:"";position:absolute;width:500px;height:500px;border:1px solid #ffffff07;border-radius:50%;right:-250px;top:-280px;pointer-events:none}
+.eyebrow{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:800;margin-bottom:15px}.slide h1{font-size:clamp(32px,3.8vw,56px);line-height:1.12;margin:0 0 19px;letter-spacing:-.03em}.slide h2{font-size:clamp(25px,2.9vw,40px);margin:0 0 15px;line-height:1.2;letter-spacing:-.025em}.slide h3{font-size:20px;margin:0 0 11px}.sub{color:var(--muted);font-size:19px;line-height:1.6;margin:0 0 25px}.small{font-size:14px;color:var(--muted)}.content{flex:1;min-height:0}.two{display:grid;grid-template-columns:1fr 1fr;gap:22px;height:100%}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}.cols-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.panel{background:linear-gradient(180deg,#19253b 0%,#121d30 100%);border:1px solid var(--border);border-radius:14px;padding:20px 24px;min-width:0}.panel.soft{background:#121c2c}.panel.accent{border-color:#419985}.panel.blue{border-color:#5876b8}.panel.warn{border-color:#b58a55}.panel p{line-height:1.55;font-size:16px;margin:8px 0;color:#d3dced}.panel ul{padding-left:20px;color:#dce5f3;line-height:1.75;font-size:16px}.panel li{margin-bottom:6px}.tag{display:inline-block;color:var(--accent);font-size:13px;font-weight:800;border-radius:100px;padding:5px 10px;background:#143c3b;border:1px solid #27726b}.tag.blue{color:#b5c6ff;background:#223153;border-color:#3b5284}.tag.orange{color:#ffd3a3;background:#3b3028;border-color:#70523c}.tag.red{color:#ffbaba;background:#42282c;border-color:#76414e}
+code,pre{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}code{color:#b6d4ff}pre{background:#090f1c;border:1px solid #27364c;border-radius:12px;padding:18px 20px;color:#d5e6ff;font-size:14px;line-height:1.55;margin:10px 0;white-space:pre-wrap;overflow-wrap:anywhere;overflow:auto;max-height:100%}.code-sm{font-size:12.5px;line-height:1.48}.hl{color:var(--accent)}.em{color:var(--orange)}.muted{color:var(--muted)}.arrow{font-size:24px;color:var(--accent2);text-align:center;padding:7px}.stack{display:flex;flex-direction:column;justify-content:center;gap:12px}.node{text-align:center;padding:14px 12px;background:#1c2c43;border:1px solid #496083;border-radius:12px;font-size:16px;font-weight:700}.node.green{border-color:#458e81;background:#153333}.node.gold{border-color:#9a7449;background:#30271e}.node small{display:block;font-weight:400;color:var(--muted);margin-top:6px;font-size:12px}.row{display:flex;gap:12px;align-items:stretch}.row>*{flex:1}.data-table{border-collapse:collapse;width:100%;font-size:15px}.data-table th{text-align:left;color:var(--accent);font-size:14px;padding:12px 13px;border-bottom:1px solid #496078}.data-table td{padding:12px 13px;border-bottom:1px solid #29374a;color:#dbe4f3;vertical-align:top}.data-table tr:last-child td{border-bottom:0}.big-number{font-size:60px;font-weight:850;color:var(--accent);letter-spacing:-.06em}.foot{position:absolute;bottom:24px;left:68px;color:#8294b0;font-size:12px}.count{position:absolute;bottom:24px;right:68px;color:#92a6be;font-size:13px}.topline{position:absolute;height:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));left:0;top:0;width:100%}.callout{background:#142d31;border-left:4px solid var(--accent);border-radius:8px;padding:14px 17px;font-size:17px;color:#e4f6f1;line-height:1.5;margin-top:14px}.svgline{color:#a4b6ce}.accent-text{color:var(--accent)}.big-flow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:22px;align-items:stretch}.big-flow .node{font-size:14px;padding:18px 10px}.big-flow .link{align-self:center;color:var(--accent2);font-size:21px;text-align:center;flex:none}.slide.large-pre pre{font-size:15px}.compact .panel{padding:16px 18px}.compact .panel p,.compact .panel ul{font-size:14px}.compact .slide h2{margin-bottom:10px}
+#controls{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0b1425e8;border:1px solid #384861;border-radius:100px;padding:8px 13px;display:flex;gap:8px;align-items:center;z-index:9;backdrop-filter:blur(12px)}button{border:1px solid #39526d;color:#edf3ff;background:#1b2c44;border-radius:99px;min-width:40px;height:36px;cursor:pointer;font-size:15px}button:hover{background:#2a415f}button:focus-visible{outline:3px solid var(--accent)}#counter{font-size:12px;color:#bac8da;min-width:65px;text-align:center}#progress{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));z-index:20;transition:width .2s}#overview{display:none;position:fixed;inset:0;z-index:15;overflow-y:auto;background:#08111ef4;padding:70px max(25px,calc((100vw - 1150px)/2));backdrop-filter:blur(18px)}#overview.show{display:block}.overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:15px}.thumb{border:1px solid #345069;border-radius:12px;padding:18px;cursor:pointer;background:#172238;min-height:115px}.thumb:hover{border-color:var(--accent)}.thumb span{font-size:12px;color:var(--accent)}.thumb strong{display:block;font-size:16px;margin-top:8px;line-height:1.3}#overview h2{margin-top:0}#closeOverview{position:absolute;right:40px;top:30px}.note{font-size:13px;line-height:1.5;color:#a5b5cb;margin-top:8px}
+@media(max-width:800px){#deck{padding:0}.slide{border-radius:0;height:100dvh;padding:38px 24px 78px;overflow:auto}.slide h1{font-size:34px}.slide h2{font-size:27px}.sub{font-size:16px}.two,.three,.cols-4{grid-template-columns:1fr;height:auto}.panel{padding:15px}.panel p,.panel li{font-size:14px}.foot{left:24px;bottom:14px;font-size:10px}.count{right:24px;bottom:14px}.big-flow{grid-template-columns:1fr}.big-flow .link{transform:rotate(90deg)}pre{font-size:12px}#controls{bottom:7px}#overview{padding:60px 18px}}
+@media print{body{overflow:visible;background:white}#deck{display:block;height:auto;padding:0}.slide{display:flex!important;page-break-after:always;break-after:page;width:1280px;height:720px;box-shadow:none;border-radius:0}#controls,#progress,#overview{display:none!important}@page{size:landscape;margin:0}}
+
+.slide h2,.slide h3,.node,.panel p,.callout{overflow-wrap:break-word} .slide .panel p{hyphens:auto} .data-table td{overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<div id="progress"></div><main id="deck">
+<section class="slide active"><div class="topline"></div><div class="eyebrow">FAU Linked Data × Fraunhofer IIS · Bewerbungsprojekt</div><h1>GeoSemantic Mapper</h1><p class="sub" style="font-size:27px;max-width:790px">Von der RDF-/SKOS-Konzeptmodellierung zur regelbasierten semantischen Zuordnung</p><div class="big-flow"><div class="node">OSM / ATKIS<small>Konzepte</small></div><div class="node">Kandidat<small>Zuordnungskandidat</small></div><div class="node">Regel-Engine<small>Regelauswertung</small></div><div class="node">Evidenz<small>Nachvollziehbare Evidenz</small></div><div class="node green">SKOS-Entscheidung<small>Ergebnisrelation</small></div></div><div style="margin-top:32px"><span class="tag">Neun technische Lernabschnitte</span> <span class="tag blue">RDFLib · Python · SKOS</span> <span class="tag orange">End-to-End-Prototyp</span></div><div class="foot">GeoSemantic Mapper · Technischer Architekturüberblick</div></section>
+<section class="slide"><div class="eyebrow">Überblick · Neun Teile</div><h2>Von der Wissensrepräsentation zur ausführbaren Zuordnung</h2><div class="content" style="display:grid;grid-template-columns:repeat(3,1fr);gap:13px"><div class="panel"><span class="tag">01</span><h3>RDF-Grundlagen</h3><p>Tripel / IRI / Literal / benannter Graph</p></div><div class="panel"><span class="tag">02</span><h3>SKOS-Konzepte</h3><p>Konzeptmodellierung für OSM und ATKIS</p></div><div class="panel"><span class="tag">03</span><h3>Mapping-Kandidat</h3><p>Zu prüfendes Konzeptpaar</p></div><div class="panel"><span class="tag">04</span><h3>EvidenceTemplate</h3><p>Vordefinierte Bedingungen und Ergebnisse</p></div><div class="panel"><span class="tag">05</span><h3>MappingRule</h3><p>Verknüpfung der drei Entscheidungszweige</p></div><div class="panel"><span class="tag">06</span><h3>evaluate_rule()</h3><p>Dynamisches Auslesen und Vergleichen</p></div><div class="panel"><span class="tag">07</span><h3>generate_evidence()</h3><p>Konkrete Evidenzinstanz speichern</p></div><div class="panel"><span class="tag">08</span><h3>make_decision()</h3><p>SKOS-Relation erzeugen</p></div><div class="panel"><span class="tag">09</span><h3>run_mapping()</h3><p>End-to-End-Prüfung mit drei Szenarien</p></div></div></section>
+<section class="slide"><div class="eyebrow">Teil 01 · RDF-Grundlagen</div><h2>RDF: Wissen wird durch Tripel beschrieben</h2><p class="sub">Tripel = (Subjekt, Prädikat, Objekt)</p><div class="three" style="margin-top:20px"><div class="panel"><span class="tag">Subjekt</span><h3 style="margin-top:20px">osm:ResidentialRoad</h3><p>Das beschriebene Klassifikationskonzept</p></div><div class="panel"><span class="tag blue">Prädikat</span><h3 style="margin-top:20px">rdf:type</h3><p>Kennzeichnet den Typ einer Ressource</p></div><div class="panel"><span class="tag orange">Objekt</span><h3 style="margin-top:20px">skos:Concept</h3><p>Ein Konzept gemäß SKOS</p></div></div><pre style="margin-top:22px">osm_graph.add((OSM.ResidentialRoad, RDF.type, SKOS.Concept))
+
+# Turtle
+osm:ResidentialRoad a skos:Concept .</pre><div class="callout">IRIs identifizieren Ressourcen. Literale repräsentieren Werte. RDF beschreibt Aussagen, führt jedoch keine Python-Vergleichsregeln aus.</div></section>
+<section class="slide"><div class="eyebrow">Teil 01 · Dataset-Architektur</div><h2>Drei benannte Graphen mit klaren Zuständigkeiten</h2><div class="content"><div class="node green" style="margin:8px 0 17px">rdflib.Dataset<small>Ein Dataset enthält mehrere benannte Graphen.</small></div><div class="three"><div class="panel"><h3>OSM-Graph</h3><p><code>osm:graph</code></p><p>OSM-Konzepte, Tags und Quellen</p></div><div class="panel"><h3>ATKIS-Graph</h3><p><code>atkis:graph</code></p><p>ATKIS-Objektarten und Eigenschaften</p></div><div class="panel"><h3>Mapping-Graph</h3><p><code>mapping:graph</code></p><p>Kandidat, Regel, Vorlage, Evidenz und Entscheidung</p></div></div><pre style="margin-top:16px">dataset = Dataset()
+osm_graph     = dataset.graph(identifier=OSM["graph"])
+atkis_graph   = dataset.graph(identifier=ATKIS["graph"])
+mapping_graph = dataset.graph(identifier=MAPPING["graph"])</pre><div class="callout">Quad = (Subjekt, Prädikat, Objekt, Graph). Quelldaten und abgeleitete Mapping-Relationen werden getrennt gespeichert.</div></div></section>
+<section class="slide"><div class="eyebrow">Teil 02 · SKOS-Konzeptmodellierung</div><h2>OSM: Von <code>highway=residential</code> zum Konzept</h2><div class="two content"><div class="stack"><div class="panel accent"><h3>osm:ResidentialRoad</h3><p><strong>Typ</strong> · skos:Concept</p><p><strong>Bezeichnung</strong> · Residential road @en</p><p><strong>Definition</strong> · Erschließung von Wohngebieten (vereinfachte Definition)</p><p><strong>Tag</strong> · highway=residential</p><p><strong>Quelle</strong> · OSM Wiki</p></div><div class="callout">SKOS modelliert Begriffssysteme und deren Mappings; das ist von der Klassenmodellierung mit RDFS/OWL zu unterscheiden.</div></div><div class="stack"><pre>osm_graph.add((
+    OSM.ResidentialRoad,
+    RDF.type,
+    SKOS.Concept
+))
+
+osm_graph.add((
+    OSM.ResidentialRoad,
+    SKOS.prefLabel,
+    Literal("Residential road", lang="en")
+))
+
+osm_graph.add((
+    OSM.ResidentialRoad,
+    OSM.tagKey,
+    Literal("highway")
+))</pre><p class="note"><code>OSM.tagKey</code> / <code>OSM.tagValue</code> sind projektspezifische RDF-Eigenschaften, kein offizielles OSM-Vokabular.</p></div></div></section>
+<section class="slide"><div class="eyebrow">Teil 02 · ATKIS und Provenienz</div><h2>ATKIS: Ein zweites Begriffssystem</h2><div class="two content"><div class="panel"><h3>atkis:AX_Strasse</h3><table class="data-table"><tr><th>Eigenschaft</th><th>Wert</th></tr><tr><td>rdf:type</td><td>skos:Concept</td></tr><tr><td>skos:prefLabel</td><td>"Straße"@de</td></tr><tr><td>atkis:objektartkennung</td><td>"42002"</td></tr><tr><td>dcterms:source</td><td>URL zum Objektartenkatalog der AdV</td></tr></table></div><div class="stack"><div class="panel blue"><h3>Datenherkunft · Provenienz</h3><p><code>dcterms:source</code> verweist auf die Quelle des modellierten Konzepts.</p><p>Zusätzlich dokumentiert <code>generatedBy</code>die Regel, aus der eine Evidenz abgeleitet wurde.</p></div><div class="panel"><h3>Konzeptpaar aus zwei Systemen</h3><p><code>osm:ResidentialRoad</code></p><div class="arrow">↕</div><p><code>atkis:AX_Strasse</code></p><p class="small">Beide Ressourcen sind projektspezifische SKOS-Repräsentationen. Eine Äquivalenz wird hier noch nicht behauptet.</p></div></div></div></section>
+<section class="slide"><div class="eyebrow">Teil 03 · Mapping-Kandidat</div><h2>Kandidat ≠ bestätigtes Mapping</h2><pre>mapping:Candidate001
+    a mapping:CandidateMapping ;
+    mapping:sourceConcept osm:ResidentialRoad ;
+    mapping:targetConcept atkis:AX_Strasse ;
+    mapping:status mapping:pending .</pre><div class="three" style="margin-top:18px"><div class="panel"><h3>Quelle</h3><p><code>osm:ResidentialRoad</code></p></div><div class="panel"><h3>Candidate001</h3><p>Eine eigenständige RDF-Ressource speichert Status, Evidenz und Entscheidung.</p></div><div class="panel"><h3>Ziel</h3><p><code>atkis:AX_Strasse</code></p></div></div><div class="callout">Zuerst wird das zu prüfende Konzeptpaar erfasst. Erst nach der Evidenzauswertung wird eine Relation wie <code>skos:exactMatch</code>als Mapping-Aussage hinzugefügt.</div></section>
+<section class="slide"><div class="eyebrow">Teil 04 · Evidenzvorlagen</div><h2>Drei Vorlagen: Welche Bedingung erzeugt welche Evidenz?</h2><div class="content"><table class="data-table"><thead><tr><th>Vorlage</th><th>Operator</th><th>Evidenztyp</th><th>Auswertungsergebnis</th></tr></thead><tbody><tr><td><code>Evidence001</code></td><td><code>Equals</code></td><td><span class="tag">Supporting</span></td><td>Compatible</td></tr><tr><td><code>Evidence002</code></td><td><code>EitherMissing</code></td><td><span class="tag orange">Missing</span></td><td>Unknown</td></tr><tr><td><code>Evidence003</code></td><td><code>NotEquals</code></td><td><span class="tag red">Conflicting</span></td><td>Incompatible</td></tr></tbody></table><pre style="margin-top:18px">mapping:Evidence001 a mapping:EvidenceTemplate ;
+    mapping:sourceConcept osm:ResidentialRoad ;
+    mapping:targetConcept atkis:AX_Strasse ;
+    mapping:sourceProperty osm:surface ;
+    mapping:targetProperty atkis:surface ;
+    mapping:operator mapping:Equals .</pre><div class="callout">Die Vorlage beschreibt die Prüfbedingung; der Wert <code>"asphalt"</code>wird nicht fest vorgegeben. Die tatsächlichen Werte liest die Regel-Engine aus den Graphen.</div></div></section>
+<section class="slide"><div class="eyebrow">Teil 04 · Vorlage und Evidenzinstanz</div><h2>Die Vorlage ist Konfiguration; die Evidenz dokumentiert eine Ausführung</h2><div class="two content"><div class="panel blue"><span class="tag blue">Vorher · Vorlage</span><h3 style="margin-top:18px">mapping:Evidence001</h3><pre>rdf:type EvidenceTemplate
+operator Equals
+feature Surface
+evidenceType Supporting
+result Compatible</pre><p>Definiert die Einordnung, falls die beiden Eigenschaftswerte übereinstimmen.</p></div><div class="panel accent"><span class="tag">Nachher · Instanz</span><h3 style="margin-top:18px">mapping:GeneratedEvidence001</h3><pre>rdf:type Evidence
+derivedFromTemplate Evidence001
+generatedBy R001
+sourceValue "asphalt"
+targetValue "asphalt"
+result Compatible</pre><p>Speichert die tatsächlich verglichenen Werte und das Ergebnis eines Laufs.</p></div></div><p class="note">Der Prototyp nutzt ein eigenes RDF-Vokabular. <code>rdf:type mapping:Evidence</code> ist eine Typaussage über eine Instanz, keine explizite RDFS-Klassendefinition.</p></section>
+<section class="slide"><div class="eyebrow">Teil 05 · Mapping-Regel</div><h2>R001 verknüpft drei Entscheidungszweige über RDF</h2><pre>mapping:R001 a mapping:MappingRule ;
+    mapping:feature mapping:Surface ;
+    mapping:onMatch mapping:Evidence001 ;
+    mapping:onMissing mapping:Evidence002 ;
+    mapping:onMismatch mapping:Evidence003 .</pre><div class="three" style="margin-top:16px"><div class="node green">onMatch<small>Evidence001 → Equals</small></div><div class="node gold">onMissing<small>Evidence002 → EitherMissing</small></div><div class="node">onMismatch<small>Evidence003 → NotEquals</small></div></div><pre style="margin-top:20px">template = mapping_graph.value(rule_id, MAPPING.onMatch)
+operator = mapping_graph.value(template, MAPPING.operator)
+# R001 → Evidence001 → Equals</pre><div class="callout">RDF speichert die Regelkonfiguration; Python implementiert die Semantik von <code>Equals</code> / <code>NotEquals</code> / <code>EitherMissing</code>.</div></section>
+<section class="slide"><div class="eyebrow">Teil 06 · evaluate_rule() · Auslesen</div><h2>Vergleichsparameter dynamisch aus dem Graphen lesen</h2><div class="two content"><div class="stack"><pre class="code-sm">branches = [
+    MAPPING.onMatch,
+    MAPPING.onMismatch,
+    MAPPING.onMissing,
+]
+for branch in branches:
+    template = mapping_graph.value(rule_id, branch)
+    if template is None:
+        continue
+
+    source_concept = mapping_graph.value(
+        template, MAPPING.sourceConcept)
+    target_concept = mapping_graph.value(
+        template, MAPPING.targetConcept)
+    source_property = mapping_graph.value(
+        template, MAPPING.sourceProperty)
+    target_property = mapping_graph.value(
+        template, MAPPING.targetProperty)</pre></div><div class="stack"><div class="node">R001<small>Regel-IRI</small></div><div class="arrow">↓ onMatch</div><div class="node">Evidence001<small>Vorlagen-IRI</small></div><div class="arrow">↓ sourceProperty / targetProperty</div><div class="node green">osm:surface ↔ atkis:surface<small>Zwei dynamisch ausgelesene Eigenschafts-IRIs</small></div></div></div></section>
+<section class="slide"><div class="eyebrow">Teil 06 · evaluate_rule() · Ausführen</div><h2>Tatsächliche Werte lesen und Operatoren ausführen</h2><pre>source_value = osm_graph.value(source_concept, source_property)
+target_value = atkis_graph.value(target_concept, target_property)
+
+missing = source_value is None or target_value is None
+if operator == MAPPING.EitherMissing:
+    matched = missing
+elif missing:
+    matched = False
+elif operator == MAPPING.Equals:
+    matched = source_value == target_value
+elif operator == MAPPING.NotEquals:
+    matched = source_value != target_value</pre><div class="three" style="margin-top:17px"><div class="panel accent"><h3>Equals</h3><p><code>asphalt == asphalt</code></p><span class="tag">Compatible</span></div><div class="panel warn"><h3>EitherMissing</h3><p><code>asphalt / None</code></p><span class="tag orange">Unknown</span></div><div class="panel"><h3>NotEquals</h3><p><code>asphalt != gravel</code></p><span class="tag red">Incompatible</span></div></div></section>
+<section class="slide"><div class="eyebrow">Teil 06 · evaluate_rule() · Rückgabe</div><h2>Ein Auswertungs-Dictionary zurückgeben, ohne RDF zu ändern</h2><pre style="font-size:17px">if matched:
+    return {
+        "rule": rule_id,
+        "template": template,
+        "source_value": source_value,
+        "target_value": target_value,
+        "evidence_type": mapping_graph.value(template, MAPPING.evidenceType),
+        "result": mapping_graph.value(template, MAPPING.result),
+    }
+return None</pre><div class="row" style="margin-top:17px"><div class="panel"><h3>Eingabe</h3><p>Rule IRI + OSM Graph + ATKIS Graph + Mapping Graph</p></div><div class="panel accent"><h3>Ausgabe</h3><p>Passende Vorlage, Ist-Werte, Evidenztyp und Ergebnis</p></div></div><div class="callout">Trennung der Zuständigkeiten: <code>evaluate_rule()</code> berechnet das Ergebnis; erst die nächste Funktion schreibt es in RDF.</div></section>
+<section class="slide"><div class="eyebrow">Teil 07 · generate_evidence()</div><h2>Aus der Python-Auswertung eine RDF-Evidenzinstanz erzeugen</h2><div class="two content"><div class="stack"><pre class="code-sm">evidence = MAPPING.GeneratedEvidence001
+mapping_graph.add((
+    evidence, RDF.type, MAPPING.Evidence
+))
+mapping_graph.add((
+    evidence, MAPPING.generatedBy,
+    evaluation["rule"]
+))
+mapping_graph.add((
+    evidence, MAPPING.derivedFromTemplate,
+    evaluation["template"]
+))
+mapping_graph.add((
+    evidence, MAPPING.result,
+    evaluation["result"]
+))</pre></div><div class="stack"><div class="node green">Candidate001</div><div class="arrow">↓ hasEvidence</div><div class="node">GeneratedEvidence001<small>Speichert tatsächliche sourceValue- und targetValue-Werte</small></div><div class="row"><div class="node">R001<small>generatedBy</small></div><div class="node">Evidence001<small>derivedFromTemplate</small></div></div></div></div></section>
+<section class="slide"><div class="eyebrow">Teil 07 · RDF-Zustand aktualisieren</div><h2>Alte Evidenz ersetzen und tatsächliche Vergleichswerte speichern</h2><div class="two content"><div class="panel"><h3>Vorherige Evidenz entfernen</h3><pre>old = mapping_graph.value(
+    candidate, MAPPING.hasEvidence
+)
+if old is not None:
+    mapping_graph.remove((
+        candidate, MAPPING.hasEvidence, None
+    ))
+    mapping_graph.remove((old, None, None))</pre><p class="small">In dieser Demo wird pro Kandidat jeweils nur die neueste Evidenz gespeichert.</p></div><div class="panel"><h3>Neue Evidenz: Werte bei Verfügbarkeit</h3><pre>if evaluation["source_value"] is not None:
+    mapping_graph.add((
+        evidence, MAPPING.sourceValue,
+        evaluation["source_value"]
+    ))
+
+mapping_graph.add((
+    candidate, MAPPING.hasEvidence, evidence
+))</pre><p class="small">Bei fehlenden Daten wird der nicht vorhandene Wert nicht gespeichert. Das Ergebnis Unknown wird über <code>mapping:result</code>dokumentiert.</p></div></div><div class="callout">Nachvollziehbarkeit: <code>generatedBy</code>kennzeichnet die verwendete Regel; <code>derivedFromTemplate</code>kennzeichnet die zutreffende Vorlage.</div></section>
+<section class="slide"><div class="eyebrow">Teil 08 · make_decision()</div><h2>Vom Auswertungsergebnis zur SKOS-Mapping-Aussage</h2><div class="content"><table class="data-table"><tr><th>Auswertungsergebnis</th><th>Demo-Entscheidung</th><th>Eintrag im Mapping-Graphen</th></tr><tr><td>Compatible</td><td><span class="tag">skos:exactMatch</span></td><td><code>osm:ResidentialRoad skos:exactMatch atkis:AX_Strasse</code></td></tr><tr><td>Unknown</td><td><span class="tag orange">skos:relatedMatch</span></td><td><code>osm:ResidentialRoad skos:relatedMatch atkis:AX_Strasse</code></td></tr><tr><td>Incompatible</td><td><span class="tag red">No Mapping</span></td><td>Keine SKOS-Relation</td></tr></table><pre style="margin-top:18px">result = evaluation["result"]
+if result == MAPPING.Compatible:
+    decision = SKOS.exactMatch
+elif result == MAPPING.Unknown:
+    decision = SKOS.relatedMatch
+elif result == MAPPING.Incompatible:
+    decision = None</pre><div class="callout">Diese Zuordnung ist eine Demo-Strategie des Prototyps, keine von SKOS oder ATKIS vorgegebene fachliche Regel.</div></div></section>
+<section class="slide"><div class="eyebrow">Teil 08 · Entscheidungszustand</div><h2>Warum alte Relationen löschen und <code>.set()</code> verwenden?</h2><div class="two content"><div class="panel"><h3>Alte SKOS-Aussagen entfernen</h3><pre>for relation in (
+    SKOS.exactMatch,
+    SKOS.relatedMatch
+):
+    mapping_graph.remove((
+        source, relation, target
+    ))</pre><p>Verhindert, dass frühere exactMatch- und relatedMatch-Aussagen für dasselbe Konzeptpaar bestehen bleiben.</p></div><div class="panel"><h3>Aktuelle Entscheidung speichern</h3><pre>mapping_graph.set((
+    candidate,
+    MAPPING.decision,
+    decision if decision is not None
+    else MAPPING.NoMapping
+))</pre><p><code>.set()</code>ersetzt den bisherigen Wert für dasselbe Subjekt und Prädikat, statt weitere Werte anzuhängen.</p></div></div><div class="callout"><code>osm:Road skos:exactMatch atkis:Road</code> ist eine Relation zwischen Konzepten; <code>Candidate001 mapping:decision skos:exactMatch</code> ist dagegen ein Entscheidungsmetadatum.</div></section>
+<section class="slide"><div class="eyebrow">Teil 09 · End-to-End-Orchestrierung</div><h2><code>run_mapping()</code>koordiniert die drei Verarbeitungsschritte</h2><pre style="font-size:16px">def run_mapping(osm_graph, atkis_graph, mapping_graph):
+    candidate = MAPPING.Candidate001
+
+    evaluation = evaluate_rule(
+        osm_graph, atkis_graph, mapping_graph, MAPPING.R001)
+    if evaluation is None:
+        raise ValueError("No matching rule branch")
+
+    evidence = generate_evidence(mapping_graph, candidate, evaluation)
+    decision = make_decision(mapping_graph, candidate, evaluation)
+    return decision</pre><div class="three" style="margin-top:15px"><div class="node">Auswerten<small>Berechnen ohne Graphänderung</small></div><div class="node">Evidenz erzeugen<small>RDF-Evidenz schreiben</small></div><div class="node green">Entscheiden<small>SKOS-Mapping schreiben</small></div></div></section>
+<section class="slide"><div class="eyebrow">Teil 09 · Testszenarien</div><h2>Drei Szenarien prüfen die gesamte Verarbeitungskette</h2><div class="content"><table class="data-table"><tr><th>Fall</th><th>OSM-Oberfläche</th><th>ATKIS-Oberfläche</th><th>Ergebnis</th><th>Entscheidung</th></tr><tr><td>1 · Equals</td><td>asphalt</td><td>asphalt</td><td>Compatible</td><td><span class="tag">exactMatch</span></td></tr><tr><td>2 · Missing</td><td>asphalt</td><td>Kein Wert</td><td>Unknown</td><td><span class="tag orange">relatedMatch</span></td></tr><tr><td>3 · NotEquals</td><td>asphalt</td><td>gravel</td><td>Incompatible</td><td><span class="tag red">No Mapping</span></td></tr></table><pre style="margin-top:20px">assert run_mapping(osm_graph, atkis_graph, mapping_graph) == SKOS.exactMatch
+# ATKIS.surface entfernen →
+assert run_mapping(osm_graph, atkis_graph, mapping_graph) == SKOS.relatedMatch
+# ATKIS.surface auf gravel setzen →
+assert run_mapping(osm_graph, atkis_graph, mapping_graph) is None</pre><div class="callout">Die drei <code>assert</code>prüfen die Rückgabewerte. Um die gespeicherten Ergebnisse zu prüfen, sollten zusätzlich Evidenz- und Entscheidungs-Tripel im Mapping-Graphen getestet werden.</div></div></section>
+<section class="slide"><div class="eyebrow">Teil 09 · Graph-Zustand und Grenzen</div><h2>Was kann der Prototyp bereits – und was folgt?</h2><div class="two content"><div class="panel accent"><h3>Umgesetzt · MVP</h3><ul><li>SKOS-Modellierung für beide Datenquellen</li><li>Eigenständige Kandidaten-Ressource</li><li>RDF-konfigurierte Regeln und Evidenzvorlagen</li><li>Regelinterpretation in Python</li><li>Automatische Erzeugung einer Evidenzinstanz</li><li>Ausgabe einer SKOS-Mapping-Entscheidung</li><li>Drei erfolgreich durchlaufene Demo-Szenarien</li></ul></div><div class="panel blue"><h3>Aktuelle Grenzen · Nächste Schritte</h3><ul><li>Derzeit ein Kandidat und eine Regel</li><li>Vergleich setzt einwertige Eigenschaften voraus</li><li>Feste Evidenz-IRI; ältere Ergebnisse werden ersetzt</li><li>Entscheidungsstrategie noch in Python definiert</li><li>surface ist eine simulierte Testeigenschaft</li><li>Nächste Schritte: Echtdaten, Regelvalidierung, Precision / Recall / F1</li></ul></div></div><div class="callout">Präzise Formulierung fürs Vorstellungsgespräch: <strong>RDF-gestützter Prototyp zur regelbasierten semantischen Zuordnung mit nachvollziehbaren Evidenzen und SKOS-Ausgabe.</strong></div></section>
+<section class="slide"><div class="eyebrow">Vorstellungsgespräch · Zusammenfassung (B2–C1)</div><h2>So erkläre ich das System im Vorstellungsgespräch</h2><div class="panel accent" style="margin:12px 0 24px"><p style="font-size:22px;line-height:1.75;color:#effffb">„In meinem Prototyp modelliere ich OSM- und ATKIS-Konzepte als RDF- beziehungsweise SKOS-Ressourcen. Die Mapping-Regeln und Evidenzvorlagen werden strukturiert im Mapping-Graphen gespeichert. Eine Python-Komponente liest die Vergleichsbedingungen, wertet Eigenschaften beider Quellen aus und erzeugt nachvollziehbare Evidenzen. Anschließend wird das Ergebnis als SKOS-Mapping-Relation gespeichert. Die Pipeline habe ich mit drei Testszenarien validiert.“</p></div><div class="three"><div class="panel"><h3>Wissensrepräsentation</h3><p>RDF · SKOS · benannte Graphen</p></div><div class="panel"><h3>Regelauswertung</h3><p>Regel · Vorlage · Operator</p></div><div class="panel"><h3>Nachvollziehbarkeit</h3><p>Evidenz · Provenienz · Entscheidung</p></div></div></section>
+<section class="slide"><div class="eyebrow">Fazit · GeoSemantic Mapper</div><h1 style="font-size:52px">Vom Wissensgraphen zur nachvollziehbaren Mapping-Entscheidung</h1><p class="sub">Daten → Kandidat → Regel → Auswertung → Evidenz → SKOS-Entscheidung</p><div class="node green" style="margin-top:35px;padding:36px;font-size:26px">End-to-End-Verarbeitung <span class="accent-text">✓</span><small style="font-size:17px;margin-top:14px">Equals · EitherMissing · NotEquals</small></div><p style="color:var(--muted);margin-top:30px;font-size:17px">Nächster Meilenstein: Echte OSM-/ATKIS-Daten anbinden und Mapping-Qualität evaluieren</p><div class="foot">Zusammenfassung der neun Lernteile · Demo-Entscheidungen sind keine offiziellen semantischen Mappings</div></section>
+</main>
+<div id="controls"><button aria-label="Vorherige Folie" id="prev" title="Vorherige Folie ←">←</button><span id="counter">1 / 22</span><button aria-label="Nächste Folie" id="next" title="Nächste Folie →">→</button><button aria-label="Folienübersicht" id="gridBtn" title="Folienübersicht O">☷</button><button aria-label="Vollbild" id="full" title="Vollbild F">⛶</button></div>
+<div id="overview"><button aria-label="Übersicht schließen" id="closeOverview">✕</button><h2>Folienübersicht</h2><div class="overview-grid" id="overviewGrid"></div></div>
+<script>
+const slides=[...document.querySelectorAll('.slide')];let current=0;
+const counter=document.querySelector('#counter');const progress=document.querySelector('#progress');const overview=document.querySelector('#overview');
+function show(n){current=Math.max(0,Math.min(slides.length-1,n));slides.forEach((s,i)=>s.classList.toggle('active',i===current));counter.textContent=`${current+1} / ${slides.length}`;progress.style.width=((current+1)/slides.length*100)+'%';history.replaceState(null,'','#slide-'+(current+1));}
+function toggleOverview(force){overview.classList.toggle('show',force===undefined?!overview.classList.contains('show'):force)}
+const grid=document.querySelector('#overviewGrid');slides.forEach((s,i)=>{s.querySelector('.count')?.remove();const count=document.createElement('div');count.className='count';count.textContent=String(i+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');s.appendChild(count);const e=document.createElement('div');e.className='thumb';const kicker=s.querySelector('.eyebrow')?.textContent||'';const title=s.querySelector('h1,h2')?.textContent||'';e.innerHTML=`<span>${i+1}. ${kicker.replace(/</g,'&lt;')}</span><strong>${title.replace(/</g,'&lt;')}</strong>`;e.onclick=()=>{show(i);toggleOverview(false)};grid.appendChild(e)});
+document.querySelector('#prev').onclick=()=>show(current-1);document.querySelector('#next').onclick=()=>show(current+1);document.querySelector('#gridBtn').onclick=()=>toggleOverview();document.querySelector('#closeOverview').onclick=()=>toggleOverview(false);document.querySelector('#full').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.()};
+window.addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();show(current+1)}else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();show(current-1)}else if(e.key==='Home')show(0);else if(e.key==='End')show(slides.length-1);else if(e.key.toLowerCase()==='o')toggleOverview();else if(e.key.toLowerCase()==='f'){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.()}else if(e.key==='Escape')toggleOverview(false)});
+const hash=location.hash.match(/slide-(\d+)/);show(hash?Number(hash[1])-1:0);
+</script></body></html>
